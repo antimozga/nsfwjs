@@ -1,6 +1,6 @@
 {
   "name": "nsfwjs",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "unpkg": "dist/nsfwjs.min.js",
   "description": "Detect NSFW content client side",
   "main": "dist/index.js",
@@ -9,6 +9,7 @@
     "lint": "tslint -p . -t verbose",
     "shipit": "yarn build && yarn scriptbundle && yarn minbundle && np",
     "build": "tsc --skipLibCheck",
+    "toc": "doctoc .",
     "contributors:add": "all-contributors add",
     "contributors:generate": "all-contributors generate",
     "prep": "yarn && yarn build && cd example/nsfw_demo/ && yarn add ../../ && cd -",
@@ -23,24 +24,25 @@
     "libgif": "0.0.3"
   },
   "peerDependencies": {
-    "@tensorflow/tfjs": "^1.1.0"
+    "@tensorflow/tfjs": "^1.7.4"
   },
   "devDependencies": {
-    "@tensorflow/tfjs": "^1.1.0",
+    "@tensorflow/tfjs": "^1.7.4",
     "@types/jest": "^25.1.0",
     "all-contributors-cli": "^6.1.2",
     "babel-core": "^6.26.0",
     "babel-plugin-transform-runtime": "~6.23.0",
     "browserify": "^16.2.3",
-    "jest": "^24.1.0",
-    "jpeg-js": "^0.3.4",
+    "doctoc": "^1.4.0",
+    "jest": "^25.2.1",
+    "jpeg-js": "^0.4.0",
     "node-fetch": "^2.3.0",
     "np": "^5.0.0",
     "seedrandom": "~3.0.3",
-    "ts-jest": "^24.0.0",
-    "ts-node": "~8.6.2",
-    "tslint": "~6.0.0",
-    "typescript": "3.8.2",
+    "ts-jest": "^25.2.1",
+    "ts-node": "~8.10.1",
+    "tslint": "~6.1.0",
+    "typescript": "3.9.3",
     "uglify-js": "^3.6.0"
   },
   "keywords": [

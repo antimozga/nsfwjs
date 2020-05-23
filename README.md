@@ -3,16 +3,41 @@
   <h2 align="center">Client-side indecent content checking</h2>
 </p>
 
-[![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors)
-[![Travis CI](https://travis-ci.com/infinitered/nsfwjs.svg?branch=master)]()
+[![All Contributors](https://img.shields.io/badge/all_contributors-15-green.svg?style=flat-square)](#contributors)
+[![Travis CI](https://travis-ci.com/infinitered/nsfwjs.svg?branch=master)](https://travis-ci.com/github/infinitered/nsfwjs)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/72d19dc0-d316-4f75-9904-a33d833ff628/deploy-status)](https://app.netlify.com/sites/nsfwjs/deploys)
 
-A simple JavaScript library to help you quickly identify unseemly images; all in the client's browser. NSFWJS isn't perfect, but it's pretty accurate (~90% from our test set of 15,000 test images)... and it's getting more accurate all the time.
+A simple JavaScript library to help you quickly identify unseemly images; all in the client's browser. NSFWJS isn't perfect, but it's pretty accurate (~90% with small and ~93% with midsized model)... and it's getting more accurate all the time.
 
 Why would this be useful? [Check out the announcement blog post](https://shift.infinite.red/avoid-nightmares-nsfw-js-ab7b176978b1).
 
 <p align="center">
 <img src="https://github.com/infinitered/nsfwjs/raw/master/_art/nsfw_demo.gif" alt="demo example" width="800" align="center" />
 </p>
+
+## **Table of Contents**
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [QUICK: How to use the module](#quick-how-to-use-the-module)
+- [Library API](#library-api)
+    - [`load` the model](#load-the-model)
+    - [`classify` an image](#classify-an-image)
+    - [`classifyGif`](#classifygif)
+- [Production](#production)
+- [Install](#install)
+    - [Host your own model](#host-your-own-model)
+- [Run the Examples](#run-the-examples)
+  - [Tensorflow.js in the browser](#tensorflowjs-in-the-browser)
+  - [Browserify](#browserify)
+  - [React Native](#react-native)
+  - [Node JS App](#node-js-app)
+- [More!](#more)
+    - [Open Source](#open-source)
+    - [Premium](#premium)
+- [Contributors](#contributors)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 The library categorizes image probabilities in the following 5 classes:
 
@@ -22,9 +47,9 @@ The library categorizes image probabilities in the following 5 classes:
 - `Porn` - pornographic images, sexual acts
 - `Sexy` - sexually explicit images, not pornography
 
-The demo is a continuous deployment source - Give it a go: http://nsfwjs.com/
+> _The demo is a continuous deployment source - Give it a go: http://nsfwjs.com/_
 
-## How to use the module
+## QUICK: How to use the module
 
 With `async/await` support:
 
@@ -51,27 +76,40 @@ const img = document.getElementById('img')
 
 // Load model from my S3.
 // See the section hosting the model files on your site.
-nsfwjs.load().then(function(model) {
-  model.classify(img).then(function(predictions) {
+nsfwjs.load().then(function (model) {
+  model.classify(img).then(function (predictions) {
     // Classify the image
     console.log('Predictions: ', predictions)
   })
 })
 ```
 
-## API
+## Library API
 
 #### `load` the model
 
 Before you can classify any image, you'll need to load the model. You should use the optional first parameter and load the model from your website, as explained in the install directions.
+
+Model example - [224x224](https://github.com/infinitered/nsfwjs/blob/master/example/nsfw_demo/public/quant_nsfw_mobilenet/)
 
 ```js
 const model = nsfwjs.load('/path/to/model/directory/')
 ```
 
 If you're using a model that needs an image of dimension other than 224x224, you can pass the size in the options parameter.
+
+Model example - [299x299](https://github.com/infinitered/nsfwjs/tree/master/example/nsfw_demo/public/model)
+
 ```js
-const model = nsfwjs.load('/path/to/different/model/', {size: 299})
+const model = nsfwjs.load('/path/to/different/model/', { size: 299 })
+```
+
+If you're using a graph model, you cannot use the infer method, and you'll need to tell model load that you're dealing with a graph model in options.
+
+Model example - [Graph](https://github.com/infinitered/nsfwjs/tree/master/example/nsfw_demo/public/quant_mid)
+
+```js
+const model = nsfwjs.load('/path/to/different/model/', { type: 'graph' })
 ```
 
 **Parameters**
@@ -103,6 +141,8 @@ const predictions = await model.classify(img, 3)
 
 #### `classifyGif`
 
+![Gif Example](./_art/gif_scrub.gif)
+
 This function can take a browser-based image element (`<img>`) that is a GIF, and returns an array of prediction arrays. It breaks a GIF into its frames and runs `classify` on each with a given configuration. This can take a while, as GIFs are frequently hundreds of frames.
 
 ```js
@@ -120,7 +160,7 @@ const myConfig = {
   topk: 1,
   setGifControl: (gifControl) => console.log(gifControl),
   onFrame: ({ index, totalFrames, predictions }) =>
-    console.log(index, totalFrames, predictions)
+    console.log(index, totalFrames, predictions),
 }
 const framePredictions = await classifyGif(img, myConfig)
 ```
@@ -139,6 +179,18 @@ const framePredictions = await classifyGif(img, myConfig)
 **Returns**
 
 - Array of the same order as number of frames in GIF. Each index corresponding to that frame, an returns array of objects that contain `className` and `probability`; sorted by probability and limited by topk config parameter.
+
+## Production
+
+Tensorflow.js offers two flags, `enableProdMode` and `enableDebugMode`. If you're going to use NSFWJS in production, be sure to enable prod mode before loading the NSFWJS model.
+
+```js
+import * as tf from '@tensorflow/tfjs'
+import * as nsfwjs from 'nsfwjs'
+tf.enableProdMode()
+//...
+let model = await nsfwjs.load(`${urlToNSFWJSModel}`)
+```
 
 ## Install
 
@@ -160,38 +212,54 @@ The magic that powers NSFWJS is the [NSFW detection model](https://github.com/ga
 ## Run the Examples
 
 ### Tensorflow.js in the browser
+
 The demo that powers https://nsfwjs.com/ is available in the `nsfw_demo` example folder.
 
 To run the demo, run `yarn prep` which will copy the latest code into the demo. After that's done, you can `cd` into the demo folder and run with `yarn start`.
 
 ### Browserify
+
 A browserified version using nothing but promises and script tags is available in the `minimal_demo` folder.
 
-Please do not use the script tags hosted in this demo as a CDN.  This can and should be hosted in your project along side the model files.
+Please do not use the script tags hosted in this demo as a CDN. This can and should be hosted in your project along side the model files.
 
 ### React Native
+
 The [NSFWJS React Native app](https://github.com/infinitered/nsfwjs-mobile)
+![React Native Demo](./_art/nsfwjs-mobile.jpg)
 
 Loads a local copy of the model to reduce network load and utilizes TFJS-React-Native. [Blog Post](https://shift.infinite.red/nsfw-js-for-react-native-a37c9ba45fe9)
 
 ### Node JS App
 
 Using NPM, you can also use the model on the server side.
+
 ```bash
 $ npm install nsfwjs
+$ npm install @tensorflow/tfjs-node
 ```
 
 ```javascript
+const axios = require('axios') //you can use any http client
+const tf = require('@tensorflow/tfjs-node')
 const nsfw = require('nsfwjs')
-const model = await nsfw.load()
-// To load a local model, nsfw.load('file://./path/to/model/')
-
-// Image must be in tf.tensor3d format
-const predictions = await model.classify(image)
-console.log(predictions)
+async function fn() {
+  const pic = await axios.get(`link-to-picture`, {
+    responseType: 'arraybuffer',
+  })
+  const model = await nsfw.load() // To load a local model, nsfw.load('file://./path/to/model/')
+  // Image must be in tf.tensor3d format
+  // you can convert image to tf.tensor3d with tf.node.decodeImage(Uint8Array,channels)
+  const image = await tf.node.decodeImage(pic.data,3)
+  const predictions = await model.classify(image)
+  image.dispose() // Tensor memory must be managed explicitly (it is not sufficient to let a tf.Tensor go out of scope for its memory to be released).
+  console.log(predictions)
+}
+fn()
 ```
 
 Here is another full example of a [multipart/form-data POST using Express](example/node_demo), supposing you are using JPG format.
+
 ```javascript
 const express = require('express')
 const multer = require('multer')
@@ -220,12 +288,12 @@ const convert = async (img) => {
   return tf.tensor3d(values, [image.height, image.width, numChannels], 'int32')
 }
 
-app.post('/nsfw', upload.single("image"), async (req, res) => {
-  if (!req.file)
-    res.status(400).send("Missing image multipart/form-data")
+app.post('/nsfw', upload.single('image'), async (req, res) => {
+  if (!req.file) res.status(400).send('Missing image multipart/form-data')
   else {
     const image = await convert(req.file.buffer)
     const predictions = await _model.classify(image)
+    image.dispose()
     res.json(predictions)
   }
 })
@@ -279,6 +347,13 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/xilaraux"><img src="https://avatars2.githubusercontent.com/u/17703730?v=4" width="100px;" alt=""/><br /><sub><b>Oleksandr Kozlov</b></sub></a><br /><a href="#infra-xilaraux" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/infinitered/nsfwjs/commits?author=xilaraux" title="Tests">⚠️</a> <a href="https://github.com/infinitered/nsfwjs/commits?author=xilaraux" title="Code">💻</a></td>
     <td align="center"><a href="http://morganlaco.com"><img src="https://avatars2.githubusercontent.com/u/4466642?v=4" width="100px;" alt=""/><br /><sub><b>Morgan</b></sub></a><br /><a href="https://github.com/infinitered/nsfwjs/commits?author=mlaco" title="Code">💻</a> <a href="#ideas-mlaco" title="Ideas, Planning, & Feedback">🤔</a></td>
     <td align="center"><a href="http://mycaule.github.io/"><img src="https://avatars2.githubusercontent.com/u/6161385?v=4" width="100px;" alt=""/><br /><sub><b>Michel Hua</b></sub></a><br /><a href="https://github.com/infinitered/nsfwjs/commits?author=mycaule" title="Code">💻</a> <a href="https://github.com/infinitered/nsfwjs/commits?author=mycaule" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://www.infinite.red"><img src="https://avatars2.githubusercontent.com/u/1771152?v=4" width="100px;" alt=""/><br /><sub><b>Kevin VanGelder</b></sub></a><br /><a href="https://github.com/infinitered/nsfwjs/commits?author=kevinvangelder" title="Code">💻</a> <a href="https://github.com/infinitered/nsfwjs/commits?author=kevinvangelder" title="Documentation">📖</a></td>
+    <td align="center"><a href="http://technikempire.com"><img src="https://avatars2.githubusercontent.com/u/11234763?v=4" width="100px;" alt=""/><br /><sub><b>Jesse Nicholson</b></sub></a><br /><a href="#data-TechnikEmpire" title="Data">🔣</a> <a href="#ideas-TechnikEmpire" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/camhart"><img src="https://avatars0.githubusercontent.com/u/3038809?v=4" width="100px;" alt=""/><br /><sub><b>camhart</b></sub></a><br /><a href="https://github.com/infinitered/nsfwjs/commits?author=camhart" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/Cameron-Burkholder"><img src="https://avatars2.githubusercontent.com/u/13265710?v=4" width="100px;" alt=""/><br /><sub><b>Cameron Burkholder</b></sub></a><br /><a href="#design-Cameron-Burkholder" title="Design">🎨</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://qwertyforce.ru"><img src="https://avatars0.githubusercontent.com/u/44163887?v=4" width="100px;" alt=""/><br /><sub><b>qwertyforce</b></sub></a><br /><a href="https://github.com/infinitered/nsfwjs/commits?author=qwertyforce" title="Documentation">📖</a></td>
   </tr>
 </table>
 

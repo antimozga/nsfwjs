@@ -9,18 +9,27 @@ const options = [
     items: [
       {
         value: 'mobilenetv2',
-        label: '90% Accurate - Small and fast'
-      }
-    ]
+        label: '90% Accurate - 2.6MB',
+      },
+      {
+        value: 'mobilenetMid',
+        label: '93% Accurate - 4.2MB',
+      },
+    ],
   },
   {
     type: 'group',
     name: 'Inception v3 Model',
-    items: [{ value: 'inceptionv3', label: '93% Accurate - Large and slow' }]
-  }
+    items: [
+      {
+        value: 'inceptionv3',
+        label: '93% Accurate - Huge!',
+      },
+    ],
+  },
 ]
 
-export default props => (
+export default (props) => (
   <div>
     <div className="modelPicker">
       <p>Currently Using:</p>
@@ -33,7 +42,9 @@ export default props => (
     <footer>
       <div>Copyright Now(ish)</div>
       <div>
-        <a href="https://store.infinite.red/products/nsfw-js-black-shirt">Buy the Shirt</a>
+        <a href="https://store.infinite.red/products/nsfw-js-black-shirt">
+          Buy the Shirt
+        </a>
       </div>
       <div>
         <a href="https://github.com/infinitered/nsfwjs">NSFWJS GitHub</a>
