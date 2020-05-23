@@ -3,7 +3,7 @@ const multer = require('multer')
 const jpeg = require('jpeg-js')
 
 const tf = require('@tensorflow/tfjs-node')
-const nsfw = require('../../dist')
+const nsfw = require('../dist')
 
 const app = express()
 const upload = multer()
